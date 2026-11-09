@@ -4,6 +4,7 @@ from parser import parse
 from geo import ip_to_country
 from stats import failed_by_country, success_by_user, failed_invalid_user
 from dashboard import show_dashboard
+from graph import show_graphs
 
 log = get_logger("main")
 
@@ -23,6 +24,7 @@ def main():
     invalid_users = failed_invalid_user(events)
 
     show_dashboard(by_country, by_user, invalid_users)
+    show_graphs(by_country, by_user, invalid_users)
     log.info("Analysis finished")
 
 
