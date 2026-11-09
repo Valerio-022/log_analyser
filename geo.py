@@ -1,26 +1,31 @@
+import json
+import urllib.request
 from logger_setup import get_logger
 
 log = get_logger("geo")
+CACHE = {}
 
-PREFIXES = {
-    "45.33.": "United States",
-    "103.21.": "India",
-    "185.220.": "Germany",
-    "91.134.": "France",
-    "192.168.": "Local network",
-}
+
+def load_countries(ips):
+    todo = [ip for ip in set(ips) if ip not in CACHE]
+    for i in range(0, len(todo), 100):
+        batch = todo[i:i + 100]
+        try:
+            req = urllib.request.Request(
+                "http://ip-api.com/batch?fields=query,countryCode",
+                data=json.dumps(batch).encode(),
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(req, timeout=10) as r:
+                for item in json.loads(r.read()):
+                    CACHE[item["query"]] = item.get("countryCode") or "Unknown"
+        except Exception as e:
+            log.error(f"Country lookup failed for a batch of {len(batch)} IPs: {e}")
+            for ip in batch:
+                CACHE[ip] = "Unknown"
 
 
 def ip_to_country(ip):
-    try:
-        for prefix, country in PREFIXES.items():
-            if ip.startswith(prefix):
-                return country
+    if ip not in CACHE:
         log.warning(f"No country found for IP: {ip}")
-        return "Unknown"
-    except AttributeError:
-        log.error(f"Invalid IP value: {ip!r}")
-        return "Unknown"
-    except Exception as e:
-        log.error(f"Unexpected error in ip_to_country: {e}")
-        return "Unknown"
+    return CACHE.get(ip, "Unknown")
