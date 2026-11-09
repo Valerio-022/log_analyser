@@ -8,11 +8,16 @@ from graph import show_graphs
 
 log = get_logger("main")
 
-DEFAULT_FILE = "data/auth_log.1"
+DEFAULT_FILES = [
+    "data/auth_log.1",
+    "data/auth_log.2",
+    "data/auth_log.3.gz",
+    "data/auth_log.4.gz",
+]
 
 
 def main():
-    paths = sys.argv[1:] or [DEFAULT_FILE]
+    paths = sys.argv[1:] or DEFAULT_FILES
     log.info(f"Starting analysis of {paths}")
 
     events = []

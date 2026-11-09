@@ -1,3 +1,4 @@
+import gzip
 import re
 from logger_setup import get_logger
 
@@ -7,11 +8,18 @@ FAILED = re.compile(r"Failed password for (invalid user )?(\S*) from (\d+\.\d+\.
 SUCCESS = re.compile(r"Accepted \w+ for (\S+) from (\d+\.\d+\.\d+\.\d+)")
 
 
+def open_log(path):
+    # .gz files are read through gzip, other files as plain text
+    if path.endswith(".gz"):
+        return gzip.open(path, "rt", encoding="utf-8", errors="replace")
+    return open(path, encoding="utf-8", errors="replace")
+
+
 def parse(path):
     events = []
     ignored = 0
     try:
-        with open(path, encoding="utf-8", errors="replace") as f:
+        with open_log(path) as f:
             for line in f:
                 m = FAILED.search(line)
                 if m:
@@ -38,6 +46,8 @@ def parse(path):
         log.error(f"File not found: {path}")
     except PermissionError:
         log.error(f"Permission denied: {path}")
+    except (OSError, EOFError) as e:
+        log.error(f"Cannot read {path} (corrupted or not a valid file): {e}")
     except Exception as e:
         log.error(f"Unexpected parsing error: {e}")
 

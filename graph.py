@@ -1,3 +1,4 @@
+from matplotlib.ticker import MaxNLocator   # NEW (import at the top)
 from logger_setup import get_logger
 
 log = get_logger("graph")
@@ -41,6 +42,7 @@ def draw_hbars(ax, counter, title, color):
     bars = ax.barh(names, values, color=color, height=0.65)
     ax.set_ylim(max(len(names), 4) - 0.5, -0.5)   # keeps bars thin when there are few
     ax.bar_label(bars, padding=4, color=TEXT, fontsize=9)
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))   # NEW: whole numbers only
     ax.set_xlim(0, max(values) * 1.15)
 
 
